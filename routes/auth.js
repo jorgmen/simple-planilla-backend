@@ -1,12 +1,12 @@
 /* 
-    Aut Routes
+    Auth Routes
     host + /api/auth
 */
 
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { validateFields } = require('../middlewares/validationMiddleware');
-const { 
+const {
     createUser, 
     logUserIn,
     renewToken

@@ -1,23 +1,30 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { validationResult } = require('express-validator');
 const User = require('../models/User');
+const { geberateJWT, generateJWT } = require('../helpers/tokens');
 
 const createUser = async (req, res = express.response) => {
-    //const {username, email, password} = req.body;
+    
     try {
+        const newUser = new User(req.body);
+        
         var message = 'Registered';
         var status = 201;
+        
+        const user = await checkIfUserExists(newUser);
 
-        const user = new User(req.body);
-        var exists = await checkIfUserExists(user);
-
-        if(!exists){
+        var token;
+        
+        if(!user){
             // encrypt password
             const salt = bcrypt.genSaltSync();
-            user.password = bcrypt.hashSync(user.password, salt);
+            newUser.password = bcrypt.hashSync(newUser.password, salt);
 
-            await user.save();
+            await newUser.save();
+
+            //Generate JWT 
+            token = await generateJWT(newUser.id, newUser.name);
+
         }else{
             status = 400;
             message = "An user with this username or email already exists, try loging in";
@@ -26,25 +33,54 @@ const createUser = async (req, res = express.response) => {
         // response
         res.status(status).json({
             msg: message,
-            uid: user.id,
-            username: user.name,
-            email: user.email
+            uid: newUser.id,
+            username: newUser.name,
+            email: newUser.email,
+            token
         });
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             msg: error
         });
     }
 };
 
-const logUserIn = (req, res = express.response) => {
+const logUserIn = async(req, res = express.response) => {
+    const {username, password} = req.body;
+    
+    try {
+        var message = 'The username or password are incorrect!';
+        var status = 400; //bad request
+        var token;
 
-    res.json({
-        "200": "OK",
-        "msg": "Log User In"
-    });
+        const user = await User.findOne({username});
 
+        if(user){
+            
+            const validPassword = bcrypt.compareSync( password, user.password);
+            
+            if(validPassword){
+                status = 200;
+                token = await generateJWT(user.id, user.name);
+                message = "User has been logged in!"
+            }
+        }
+
+        res.status(status).json({
+            ok: true,
+            msg: message,
+            uid: status == 200 ? user.id : null,
+            name: status == 200 ? user.name : '',
+            token
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error
+        });
+    }
 };
 
 
@@ -67,8 +103,9 @@ const checkIfUserExists = async(user) =>{
                 {email: user.email}
             ] 
         });
-    return !!found;
-}
+
+    return !!found ? found : false;
+};
 
 
 
