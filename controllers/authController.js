@@ -72,7 +72,7 @@ const logUserIn = async(req, res = express.response) => {
             ok: true,
             msg: message,
             uid: status == 200 ? user.id : null,
-            name: status == 200 ? user.name : '',
+            name: status == 200 ? user.name : '', 
             token
         });
     } catch (error) {
@@ -84,11 +84,15 @@ const logUserIn = async(req, res = express.response) => {
 };
 
 
-const renewToken = (req, res = express.response) => {
+const renewToken = async(req, res = express.response) => {
+    const {uid, name} = req;
+    
+    //Generate new JWT 
+    token = await generateJWT(uid, name);
 
-    res.json({
-        "200": "OK",
-        "msg": "token renew"
+    res.status(200).json({
+        ok: true,
+        token
     });
 
 };
