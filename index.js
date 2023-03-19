@@ -20,8 +20,9 @@ app.use(express.static('public'));
 app.use(express.json());
 
 //Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/payroll', require('./routes/payroll'));
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/payroll', require('./routes/payrollRoutes'));
+app.use('/api/user', require('./routes/userRoutes'));
 // TODO  CRUD
 
 // listen to requests on port 4000

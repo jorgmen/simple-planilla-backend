@@ -1,78 +1,18 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const { geberateJWT, generateJWT } = require('../helpers/tokens');
+const {
+    generateJWT,
+} = require('../helpers/tokens');
+const {validateUsernameAndPassword} = require('../services/userService');
 
-const createUser = async (req, res = express.response) => {
-    
+const renewToken = async (req, res = express.response) => {
+    const { uid, name } = req;
+
     try {
-        const newUser = new User(req.body);
-        
-        var message = 'Registered';
-        var status = 201;
-        
-        const user = await checkIfUserExists(newUser);
+        //Generate new JWT 
+        token = await generateJWT(uid, name);
 
-        var token;
-        
-        if(!user){
-            // encrypt password
-            const salt = bcrypt.genSaltSync();
-            newUser.password = bcrypt.hashSync(newUser.password, salt);
-
-            await newUser.save();
-
-            //Generate JWT 
-            token = await generateJWT(newUser.id, newUser.name);
-
-        }else{
-            status = 400;
-            message = "An user with this username or email already exists, try loging in";
-        }
-
-        // response
-        res.status(status).json({
-            msg: message,
-            uid: newUser.id,
-            username: newUser.name,
-            email: newUser.email,
-            token
-        });
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: error
-        });
-    }
-};
-
-const logUserIn = async(req, res = express.response) => {
-    const {username, password} = req.body;
-    
-    try {
-        var message = 'The username or password are incorrect!';
-        var status = 400; //bad request
-        var token;
-
-        const user = await User.findOne({username});
-
-        if(user){
-            
-            const validPassword = bcrypt.compareSync( password, user.password);
-            
-            if(validPassword){
-                status = 200;
-                token = await generateJWT(user.id, user.name);
-                message = "User has been logged in!"
-            }
-        }
-
-        res.status(status).json({
+        res.status(200).json({
             ok: true,
-            msg: message,
-            uid: status == 200 ? user.id : null,
-            name: status == 200 ? user.name : '', 
             token
         });
     } catch (error) {
@@ -84,37 +24,39 @@ const logUserIn = async(req, res = express.response) => {
 };
 
 
-const renewToken = async(req, res = express.response) => {
-    const {uid, name} = req;
-    
-    //Generate new JWT 
-    token = await generateJWT(uid, name);
+const logUserIn = async (req, res = response) => {
+    const { username, password } = req.body;
 
-    res.status(200).json({
-        ok: true,
-        token
-    });
+    try {
+        var message = 'The username or password are incorrect!';
+        var status = 400; //bad request
+        var token;
 
-};
+        const user = validateUsernameAndPassword(username, password);
+
+        if (user) {
+            status = 200;
+            token = await generateJWT(user.id, user.name);
+            message = "User has been logged in!"
+        }
 
 
-const checkIfUserExists = async(user) =>{
-    
-    let found = await User.findOne(
-        { $or: 
-            [
-                {username: user.username}, 
-                {email: user.email}
-            ] 
+        res.status(status).json({
+            ok: true,
+            msg: message,
+            uid: status == 200 ? user.id : null,
+            name: status == 200 ? user.name : '',
+            token
         });
-
-    return !!found ? found : false;
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error
+        });
+    }
 };
-
-
 
 module.exports = {
-    createUser,
-    logUserIn,
-    renewToken
+    renewToken,
+    logUserIn
 };
