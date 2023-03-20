@@ -6,10 +6,11 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { validateFields } = require('../middlewares/validationMiddleware');
+const { validateJWT } = require('../middlewares/tokenMiddleware');
 
 const {
-    getAllPayrolls,  
     createPayroll,
+    readPayrolls,  
     updatePayroll,
     removePayroll
 } = require('../controllers/payrollController');
@@ -17,21 +18,22 @@ const {
 const router = Router();
 
 //Routes
-router.get(
-    '/All',
-    [],
-    getAllPayrolls
-);
-
 
 router.post(
     '/',
     [
         check('name', 'Name is required!').notEmpty(),
         check('name', 'Name Should be at least 6 characters long!').isLength({min: 6}),
-        validateFields
+        validateFields,
+        validateJWT
     ],
     createPayroll
+);
+
+router.get(
+    '/All',
+    [],
+    readPayrolls
 );
 
 router.put(

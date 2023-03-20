@@ -3,9 +3,10 @@ const { Schema, model } = require('mongoose');
 const DeductionSchema = Schema({
     name:{
         type: String,
+        unique: true,
         required: true
     },
-    porcentage:{
+    percentage:{
         type: Number,
         required: true
     },
@@ -15,6 +16,17 @@ const DeductionSchema = Schema({
     },
     description:{
         type: String,
+    },
+    user:{
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: false,
+        unique: false
+    },
+    dateCreated:{
+        type: Date,
+        required: true,
+        unique: false
     }
 });
 

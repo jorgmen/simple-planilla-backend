@@ -49,16 +49,13 @@ const getUserByUsername = async (username) => {
 };
 
 const validateUsernameAndPassword = async(username, password)=>{
-    
-    const user = await getUserByUsername({ username });
 
-    (user && bcrypt.compareSync(password, user.password)) 
+    const user = await User.findOne({ username });
+    //console.log((!!user && bcrypt.compareSync(password, user.password)));
+    return (!!user && bcrypt.compareSync(password, user.password)) 
         ? user
-        : null;
+        : {};
 };
-
-
-
 
 module.exports = {
     createUserIfNotExists,

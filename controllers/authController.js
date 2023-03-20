@@ -26,26 +26,24 @@ const renewToken = async (req, res = express.response) => {
 
 const logUserIn = async (req, res = response) => {
     const { username, password } = req.body;
-
     try {
         var message = 'The username or password are incorrect!';
         var status = 400; //bad request
         var token;
 
-        const user = validateUsernameAndPassword(username, password);
-
-        if (user) {
+        const { id, name } = await validateUsernameAndPassword(username, password);
+        
+        if (id) {
             status = 200;
-            token = await generateJWT(user.id, user.name);
+            token = await generateJWT(id, name);
             message = "User has been logged in!"
         }
-
 
         res.status(status).json({
             ok: true,
             msg: message,
-            uid: status == 200 ? user.id : null,
-            name: status == 200 ? user.name : '',
+            id,
+            name,
             token
         });
     } catch (error) {

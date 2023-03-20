@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const validateJWT = (req, res = response, next) =>{
     var msg = 'Invalid Token';
+    
     //x-toke headers
     const token = req.header('x-token');
     

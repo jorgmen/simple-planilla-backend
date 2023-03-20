@@ -2,24 +2,6 @@ const express = require('express');
 const Payroll = require('../models/Payroll');
 
 
-const getAllPayrolls = async(req, res = express.response)=>{
-    try {
-
-        const payrolls = await Payroll.find().populate('user', 'name');
-
-        res.status(200).json({
-            payrolls
-        });
-
-    } catch (error) {
-        res.status(500).json({
-           error 
-        });        
-    }
-};
-
-
-
 const createPayroll = async(req, res = express.response) =>{
 
     try {
@@ -27,6 +9,7 @@ const createPayroll = async(req, res = express.response) =>{
         var status = 200;
 
         req.body.dateCreated = Date();
+        console.log(req.uid);
         const payroll = new Payroll(req.body);
         var exists = await checkIfPayrollExists(payroll);
 
@@ -45,11 +28,27 @@ const createPayroll = async(req, res = express.response) =>{
         });
 
     } catch (error) {
-        req.status(500).json({
+        res.status(500).json({
             msg: error
         });
     }
 }
+
+const readPayrolls = async(req, res = express.response)=>{
+    try {
+
+        const payrolls = await Payroll.find().populate('user', 'name');
+
+        res.status(200).json({
+            payrolls
+        });
+
+    } catch (error) {
+        res.status(500).json({
+           error 
+        });        
+    }
+};
 
 const updatePayroll = async(req, res = express.response) =>{
 
@@ -97,7 +96,7 @@ const checkIfPayrollExists = async(payroll) => {
 };
 
 module.exports = {
-    getAllPayrolls,
+    readPayrolls,
     createPayroll,
     updatePayroll,
     removePayroll
