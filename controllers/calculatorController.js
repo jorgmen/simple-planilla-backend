@@ -1,16 +1,18 @@
 const { response } = require('express');
-const Deduction = require('../models/Deduction');
-
+const { 
+    calculateNetSalary ,
+    calculateDetailedNetSalary
+} = require('../services/calculatorService');
 
 const calculate = async (req, res = response) => {
     try {
 
         const { grossSalary } = req.body;
 
-        console.log(`Gross Salary: ${grossSalary}`);
+        const netSalary = await calculateNetSalary(grossSalary);
 
         res.status(200).json({
-            grossSalary
+            netSalary
         });
 
     } catch (error) {
@@ -21,7 +23,28 @@ const calculate = async (req, res = response) => {
     }
 };
 
+const calculateDetailed = async(req, res =  response)=>{
+    try {
+        
+        const {grossSalary} = req.body
+
+        const details = await calculateDetailedNetSalary(grossSalary);
+        console.log(details);
+        res.status(200).json({
+            data: details
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: "Error at calculateDetailed",
+            error
+        });
+    }
+}
+
 module.exports = {
-    calculate
+    calculate,
+    calculateDetailed
 };
 

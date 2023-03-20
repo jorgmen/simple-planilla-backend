@@ -5,7 +5,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { validateFields } = require('../middlewares/validationMiddleware');
-const { calculate } = require('../controllers/calculatorController');
+const { calculate, calculateDetailed } = require('../controllers/calculatorController');
 
 const router = Router();
 
@@ -13,11 +13,21 @@ const router = Router();
 router.post(
     '/calculate',
     [
-    check('grossSalary').notEmpty(),
-    check('grossSalary').isNumeric(),
-    validateFields
+        check('grossSalary').notEmpty(),
+        check('grossSalary').isNumeric(),
+        validateFields
     ],
     calculate
+);
+
+router.post(
+    '/calculate-detailed',
+    [
+        check('grossSalary').notEmpty(),
+        check('grossSalary').isNumeric(),
+        validateFields
+    ],
+    calculateDetailed
 );
 
 module.exports = router;
